@@ -82,7 +82,7 @@ From DA1 Question 4 ("Library Book Tracking System"), required items and mapping
 
 Common DA1 rules compliance:
 - Menu-driven program with switch/case: YES (`main()` loop)
-- Minimum 5 user-defined functions: YES (17 functions)
+- Minimum 5 user-defined functions: YES (16 excluding `main()`, 17 including `main()`)
 - Minimum 1 struct: YES (`Book`)
 - File handling: YES (binary file persistence)
 - Input validation: YES (ID/menu/string/operation checks)
@@ -163,7 +163,7 @@ Reasoning:
 | displayIssuedBooks() | Shows only issued records                  | None                         | filtered table + issued total                 |
 +----------------------+--------------------------------------------+------------------------------+-----------------------------------------------+
 
-Total user-defined functions: 17
+Total user-defined functions: 16 (excluding `main()`), 17 including `main()`
 
 
 3.4 Program Flow (High-Level)
@@ -319,7 +319,7 @@ Error scenario handling matrix:
 | 01   | Add Book: ID=101, Title=DSA, Author=Weiss       | Book added with status Available               | PASS   |
 | 02   | Add duplicate ID=101                            | Duplicate ID rejected                          | PASS   |
 | 03   | Issue ID=101 to RegNo=25BCE5101                 | Status changes to Issued, RegNo stored         | PASS   |
-| 04   | Issue ID=101 again                              | Rejected: already issued                       | PASS   |
+| 04   | Issue ID=101 again                              | Rejected: already issued (shows current RegNo) | PASS   |
 | 05   | Return ID=101                                   | Status set to Available, RegNo cleared         | PASS   |
 | 06   | Return ID=101 again                             | Rejected: already available                    | PASS   |
 | 07   | Search by ID existing (101)                     | Correct record details displayed               | PASS   |
@@ -396,5 +396,29 @@ logic prevents invalid operations such as duplicate IDs and repeated issue of
 the same book, while also providing useful search and reporting views for the
 library operator. Overall, the project is complete, requirement-aligned, and
 ready for academic submission and live demonstration.
+
+================================================================================
+12) FINAL PDF SUBMISSION CHECKLIST (TO AVOID MARK CUTS)
+================================================================================
+Before submitting the single DA1 PDF, ensure the PDF includes:
+
+- Cover page with:
+  - Project title
+  - Student name and register number
+  - Course and faculty details
+  - GitHub repository link
+  - Live hosted link
+- Problem statement section
+- Feature list (minimum 6 features)
+- Struct explanation
+- Function list table
+- File handling design section (file name, format, sample record)
+- Testing table (minimum 6 test cases; this document includes 14)
+- At least 3 screenshots (menu, operation success, report/search result)
+- AI usage declaration
+- Final conclusion
+
+Submission format reminder from instructions:
+- Submit/attach only one documentation PDF as required by faculty instructions.
 
 ================================================================================
