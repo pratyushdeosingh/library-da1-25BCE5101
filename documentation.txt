@@ -1,0 +1,280 @@
+================================================================================
+        LIBRARY BOOK TRACKING SYSTEM — PROJECT DOCUMENTATION
+================================================================================
+  Student Name  : Pratyush Deo Singh
+  Register No   : 25BCE5101
+  Department    : BCE
+  Course        : Structured and Object Oriented Programming
+  Faculty       : Dr. Dinakaran M
+  Project       : DA1 — C Programming Mini Project
+================================================================================
+
+
+================================================================================
+  (a) PROBLEM STATEMENT
+================================================================================
+
+I was tasked with building a Library Book Tracking System as a mini project for
+my Structured and Object Oriented Programming course. The objective was to
+design a menu-driven C program that allows a librarian to manage books in a
+library. The system needed to support adding new books, issuing them to students
+using their register numbers, returning issued books, searching by Book ID or by
+keyword in the title, and displaying all books or only the currently issued ones.
+All data had to be persisted using binary file handling so that records survive
+across program restarts. The program also needed to include input validation at
+every step — preventing duplicate Book IDs, blocking issue operations on
+already-issued books, and handling invalid menu choices gracefully. I implemented
+the entire system using structs, user-defined functions, switch-case menu logic,
+and binary file I/O with fread/fwrite. The project gave me practical experience
+in applying structured programming concepts to a real-world problem.
+
+
+================================================================================
+  (b) FEATURES IMPLEMENTED
+================================================================================
+
+  - Add new books with automatic duplicate BookID detection
+  - Issue books to students by register number with status validation
+    (only "Available" books can be issued)
+  - Return issued books with status validation
+    (only "Issued" books can be returned)
+  - Search for a specific book by its unique BookID
+  - Search books by title keyword with case-insensitive substring matching
+  - Display all books in a formatted table view
+  - Display only currently issued books along with the student register number
+  - Persistent binary file storage — all records are saved to "library.dat"
+    and automatically reloaded on program startup
+  - Comprehensive input validation on every user input (non-integer inputs,
+    negative IDs, empty strings, invalid menu choices)
+
+
+================================================================================
+  (c) FUNCTION LIST TABLE
+================================================================================
+
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| Function Name        | Purpose                                  | Inputs                     | Output                          |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| main()               | Entry point; runs menu loop and routes    | None                       | Program execution               |
+|                      | user choices via switch/case              |                            |                                 |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| displayMenu()        | Prints the 8 menu options to the screen  | None                       | Menu text on screen             |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| clearInputBuffer()   | Discards leftover characters from stdin  | None                       | Clean input buffer              |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| toLowerStr()         | Converts a string to lowercase for       | Source string, dest buffer, | Lowercase copy in dest          |
+|                      | case-insensitive comparison              | max length                 |                                 |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| findBookIndexByID()  | Finds the array index of a book by       | BookID (int)               | Index (int), or -1 if not found |
+|                      | its BookID                               |                            |                                 |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| printTableHeader()   | Prints column headers for the book table | None                       | Header row on screen            |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| printTableRow()      | Prints one book record as a formatted    | Pointer to Book            | One row on screen               |
+|                      | table row                                |                            |                                 |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| printBookDetails()   | Prints detailed vertical view of a       | Pointer to Book            | Detailed output on screen       |
+|                      | single book                              |                            |                                 |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| loadFromFile()       | Reads all Book records from library.dat  | None (reads file)          | Populates books[] and bookCount |
+|                      | into memory on startup                   |                            |                                 |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| saveToFile()         | Writes all Book records from memory to   | None (writes file)         | Updated binary file on disk     |
+|                      | library.dat, overwriting previous data   |                            |                                 |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| addBook()            | Adds a new book after validating ID      | User input via scanf/fgets | New book in array + file saved  |
+|                      | uniqueness and non-empty fields          |                            |                                 |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| issueBook()          | Issues an available book to a student    | User input via scanf       | Updated status + file saved     |
+|                      | by register number                       |                            |                                 |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| returnBook()         | Returns an issued book, resets status    | User input via scanf       | Updated status + file saved     |
+|                      | to Available and IssuedToRegNo to ""     |                            |                                 |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| searchByID()         | Searches and displays a book by BookID   | User input via scanf       | Book details on screen          |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| searchByKeyword()    | Searches titles for a keyword            | User input via fgets       | Matching books table on screen  |
+|                      | (case-insensitive substring match)       |                            |                                 |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| displayAllBooks()    | Displays all books in a formatted table  | None                       | Full table on screen            |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+| displayIssuedBooks() | Displays only books with Status "Issued" | None                       | Filtered table on screen        |
++----------------------+------------------------------------------+----------------------------+---------------------------------+
+
+Total user-defined functions: 17 (requirement was minimum 5)
+
+
+================================================================================
+  (d) FILE HANDLING EXPLANATION
+================================================================================
+
+  File Name   : library.dat
+  Format      : Binary file (not human-readable)
+  Read/Write  : fread() and fwrite() from <stdio.h>
+
+  How it works:
+  On program startup, loadFromFile() opens "library.dat" in binary read mode
+  ("rb") and reads Book-sized blocks into the books[] array using fread() until
+  EOF is reached. If the file does not exist (e.g., on first run), fopen()
+  returns NULL and the program handles this gracefully — it prints an info
+  message and starts with an empty library (bookCount = 0).
+
+  Every time a book is added, issued, or returned, saveToFile() opens the file
+  in binary write mode ("wb") and writes the entire books[] array using fwrite(),
+  overwriting the previous file contents. This ensures data is always up to date.
+
+  Example stored record (conceptual):
+  A binary representation of the struct:
+    {
+      BookID       : 101
+      Title        : "Data Structures"
+      Author       : "Mark Allen Weiss"
+      Status       : "Available"
+      IssuedToRegNo: "" (empty string — no student currently holds this book)
+    }
+  This is stored as raw bytes matching sizeof(Book) = approximately 192 bytes
+  (exact size depends on compiler padding).
+
+
+================================================================================
+  (e) CORE LOGIC EXPLANATION
+================================================================================
+
+  Issue Logic:
+  When a user selects "Issue Book", the program asks for a BookID. It calls
+  findBookIndexByID() which performs a linear scan of the books[] array comparing
+  each element's BookID field. If found, it checks strcmp(Status, "Issued") — if
+  the book is already issued, it rejects the operation with an error message that
+  also shows who the book is currently issued to. If the status is "Available",
+  the program prompts for the student register number, validates it, sets the
+  Status field to "Issued", stores the register number in IssuedToRegNo, and
+  calls saveToFile() to persist the change.
+
+  Return Logic:
+  Similar to issue — finds the book by ID using findBookIndexByID(), then checks
+  if Status is "Available" (meaning it is not currently issued, so there is
+  nothing to return). If the status is "Issued", it resets Status to "Available"
+  and IssuedToRegNo to an empty string (""), then saves the updated data to the file.
+
+  Search Logic:
+  searchByID() uses findBookIndexByID() for an exact integer match on BookID.
+  searchByKeyword() performs case-insensitive substring matching: it converts
+  both the user's keyword and each book's title to lowercase using the helper
+  function toLowerStr(), then uses strstr() to check if the lowercase keyword
+  appears anywhere within the lowercase title. All matching books are displayed
+  in a formatted table.
+
+
+================================================================================
+  (f) TEST CASES
+================================================================================
+
++-------+----------------------------------------------+----------------------------------------------+----------------------------------------------+--------+
+| TC No | Input                                        | Expected Output                              | Actual Output                                | Result |
++-------+----------------------------------------------+----------------------------------------------+----------------------------------------------+--------+
+|  1    | Add book: ID=101,                            | Book added successfully,                     | [SUCCESS] Book "Data Structures"             | PASS   |
+|       | Title="Data Structures",                     | status set to Available                      | (ID: 101) added successfully.                |        |
+|       | Author="Mark Weiss"                          |                                              |                                              |        |
++-------+----------------------------------------------+----------------------------------------------+----------------------------------------------+--------+
+|  2    | Add book with duplicate ID=101               | Error: Book ID 101 already exists            | [ERROR] Book ID 101 already exists.          | PASS   |
+|       |                                              |                                              | Duplicate IDs are not allowed.               |        |
++-------+----------------------------------------------+----------------------------------------------+----------------------------------------------+--------+
+|  3    | Issue book ID=101 to student                 | Book issued successfully,                    | [SUCCESS] Book "Data Structures"             | PASS   |
+|       | RegNo=25BCE5101                              | status changes to Issued                     | (ID: 101) issued to student 25BCE5101.       |        |
++-------+----------------------------------------------+----------------------------------------------+----------------------------------------------+--------+
+|  4    | Issue book ID=101 again                      | Error: Book is already issued                | [ERROR] Book "Data Structures" is already    | PASS   |
+|       | (already issued)                             |                                              | issued to student 25BCE5101.                 |        |
++-------+----------------------------------------------+----------------------------------------------+----------------------------------------------+--------+
+|  5    | Search keyword "data"                        | Shows "Data Structures" in results           | Displays matching book in table with         | PASS   |
+|       | (case-insensitive)                           |                                              | Total matches: 1                             |        |
++-------+----------------------------------------------+----------------------------------------------+----------------------------------------------+--------+
+|  6    | Return book ID=101                           | Book returned, status back to Available,     | [SUCCESS] Book "Data Structures"             | PASS   |
+|       |                                              | IssuedToRegNo reset to empty string          | (ID: 101) returned successfully.             |        |
++-------+----------------------------------------------+----------------------------------------------+----------------------------------------------+--------+
+
+
+================================================================================
+  (g) ERROR HANDLING
+================================================================================
+
++---------------------------------------------+------------------------------------------------+
+| Invalid Input                               | How It Is Handled                              |
++---------------------------------------------+------------------------------------------------+
+| Non-integer entered for menu choice         | scanf return value checked; error message       |
+|                                             | shown; input buffer cleared with                |
+|                                             | clearInputBuffer()                              |
++---------------------------------------------+------------------------------------------------+
+| Negative or zero BookID                     | Rejected with error message before any          |
+|                                             | processing occurs                               |
++---------------------------------------------+------------------------------------------------+
+| Duplicate BookID on add                     | findBookIndexByID() check; error message with   |
+|                                             | the duplicate ID shown to user                  |
++---------------------------------------------+------------------------------------------------+
+| Empty title or author                       | strlen check after fgets; rejected with error   |
+|                                             | message                                         |
++---------------------------------------------+------------------------------------------------+
+| Issuing an already-issued book              | strcmp check on Status field; shows who the      |
+|                                             | book is currently issued to                      |
++---------------------------------------------+------------------------------------------------+
+| Returning a book that is already available  | strcmp check on Status; error message stating    |
+|                                             | book is not currently issued                     |
++---------------------------------------------+------------------------------------------------+
+| Searching with empty keyword                | Length check; rejected with error message        |
++---------------------------------------------+------------------------------------------------+
+| File not found on startup                   | fopen returns NULL; program prints info message  |
+|                                             | and starts with empty library (bookCount = 0)    |
++---------------------------------------------+------------------------------------------------+
+| Library full (500 books)                    | bookCount >= MAX_BOOKS check before adding       |
++---------------------------------------------+------------------------------------------------+
+| Book ID not found during issue/return/search| findBookIndexByID returns -1; appropriate error  |
+|                                             | message shown for each operation                 |
++---------------------------------------------+------------------------------------------------+
+
+
+================================================================================
+  (h) AI USAGE DECLARATION
+================================================================================
+
+  AI Used             : Yes, used for code generation and documentation
+                        assistance.
+  Modifications Made  : Tested and debugged personally; verified compilation
+                        with gcc -std=c99 -Wall -Wextra with zero warnings;
+                        tested all menu options manually.
+  Understanding       : Understood all logic before submission — struct usage,
+                        file I/O with fread/fwrite, case-insensitive string
+                        matching with tolower/strstr, input validation patterns,
+                        and menu-driven control flow with switch-case.
+
+
+================================================================================
+  (i) CONCLUSION
+================================================================================
+
+Through this project, I gained hands-on experience in building a complete,
+menu-driven application in C. I learned how to use structs to model real-world
+entities, how to persist data across sessions using binary file handling with
+fread and fwrite, and how to implement robust input validation to prevent crashes
+and logical errors. The case-insensitive keyword search taught me practical
+string manipulation techniques using tolower() and strstr(). Working with
+function prototypes and modular code organization reinforced the importance of
+breaking a program into well-defined, reusable components. Overall, this project
+strengthened my understanding of structured programming principles and prepared
+me for more complex software development tasks.
+
+
+================================================================================
+  EMSCRIPTEN COMPILATION COMMAND (WebAssembly)
+================================================================================
+
+  emcc library.c -o library.html -s WASM=1 -s EXIT_RUNTIME=1 -s INVOKE_RUN=1 -s FORCE_FILESYSTEM=1
+
+  This produces three files:
+    - library.html  (web page with embedded terminal)
+    - library.js    (JavaScript glue code)
+    - library.wasm  (compiled WebAssembly binary)
+
+  Open library.html in a browser to run the program.
+  The -s FORCE_FILESYSTEM=1 flag enables the in-memory filesystem so that
+  fopen/fwrite/fread calls work correctly in the browser environment.
+
+================================================================================
